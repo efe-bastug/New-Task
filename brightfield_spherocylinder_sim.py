@@ -215,10 +215,6 @@ for k, z_f in enumerate(Z_DEPTHS):
           f"  |  noisy max={float(jnp.max(img_noisy)):.1f} ph"
           f"  SNR≈{snr:.1f}")
 
-# I also saved the raw exit field components for Figure 4
-exit_intensity = np.array(jnp.squeeze(field_exit.intensity))
-exit_phase     = np.array(jnp.angle(jnp.squeeze(field_exit.u)))
-exit_amplitude = np.array(jnp.abs(jnp.squeeze(field_exit.u)))
 
 # 7. NORMALISATION
 # I normalised all clean images together and all noisy images together using a shared
@@ -349,72 +345,6 @@ plt.savefig(out3, dpi=150, bbox_inches="tight")
 plt.close()
 print(f"  Figure 3 saved → {out3}")
 
-# 11. FIGURE 4 – BPM exit field: amplitude, phase, and intensity
-# This shows what the wavefront looks like right after it exits the cell,
-# before passing through any lenses. It visualises the complex transmission t(x,y).
-fig4, axes4 = plt.subplots(1, 3, figsize=(13, 4))
-fig4.suptitle(
-    r"BPM exit field at cell centre  —  $t(x,y,z)=A(x,y,z)\cdot e^{i\phi(x,y,z)}$"
-    f"  (spherocylinder {2*CELL_RADIUS}×{CELL_LENGTH} µm)",
-    fontsize=11, fontweight="bold",
-)
-panels4 = [
-    (exit_amplitude, "hot",     "Amplitude  |u|",             "Amplitude"),
-    (exit_phase,     "RdBu",    "Phase  φ  [rad]",            "Phase (rad)"),
-    (exit_intensity, "inferno", "Intensity  |u|²  (no lens)", "Intensity"),
-]
-for ax, (data, cmap, title, cblabel) in zip(axes4, panels4):
-    vkw = {"vmin": -np.pi, "vmax": np.pi} if "Phase" in title else {}
-    im4 = ax.imshow(data, cmap=cmap, origin="lower",
-                    extent=[-FOV/2, FOV/2, -FOV/2, FOV/2], **vkw)
-    ax.set_title(title, fontsize=11)
-    ax.set_xlabel("x (µm)", fontsize=9)
-    ax.set_ylabel("y (µm)", fontsize=9)
-    ax.set_xlim(-4, 4)
-    ax.set_ylim(-4, 4)
-    plt.colorbar(im4, ax=ax, label=cblabel, shrink=0.85)
-    add_cell_outline(ax)
-fig4.tight_layout()
-out4 = "brightfield_spherocyl_exit_field.png"
-plt.savefig(out4, dpi=150, bbox_inches="tight")
-plt.close()
-print(f"  Figure 4 saved → {out4}")
-
-# 12. FIGURE 5 – side-by-side comparison: clean (top row) vs noisy (bottom row)
-fig5, axes5 = plt.subplots(2, n_p, figsize=(3.2 * n_p, 7))
-fig5.suptitle(
-    f"Brightfield spherocylinder {2*CELL_RADIUS}×{CELL_LENGTH} µm — clean vs noisy\n"
-    f"(Poisson {PHOTON_SCALE} ph/px  +  Gaussian σ={READ_NOISE_STD} e⁻)",
-    fontsize=12, fontweight="bold",
-)
-for row, (imgs_n, row_lbl) in enumerate(zip([imgs_clean_n, imgs_noisy_n], ["Clean", "Noisy"])):
-    for k, (z_f, img) in enumerate(zip(Z_DEPTHS, imgs_n)):
-        ax = axes5[row, k]
-        ax.imshow(img, cmap="gray", origin="lower",
-                  extent=[-FOV/2, FOV/2, -FOV/2, FOV/2], vmin=0, vmax=1)
-        if row == 0:
-            title = f"z = {z_f:+.1f} µm"
-            if z_f in z_labels:
-                title += f"\n({z_labels[z_f]})"
-            ax.set_title(title, fontsize=9)
-        if k == 0:
-            ax.set_ylabel(f"{row_lbl}\ny (µm)", fontsize=8)
-        else:
-            ax.set_yticklabels([])
-        if row == 1:
-            ax.set_xlabel("x (µm)", fontsize=8)
-        else:
-            ax.set_xticklabels([])
-        ax.set_xlim(-4, 4)
-        ax.set_ylim(-4, 4)
-        ax.tick_params(labelsize=6)
-        add_cell_outline(ax)
-plt.tight_layout()
-out5 = "brightfield_spherocyl_clean_vs_noisy.png"
-plt.savefig(out5, dpi=150, bbox_inches="tight")
-plt.close()
-print(f"  Figure 5 saved → {out5}")
-
 # SUMMARY
 print("\n" + "=" * 60)
 print("SUMMARY")
@@ -424,5 +354,5 @@ print(f"  n_cell = {N_CELL}  (dn = {DN_CELL})")
 print(f"  Phase shift  : {float(max_phase):.2f} rad = {float(max_phase/(2*jnp.pi)):.2f} λ")
 print(f"  Magnification: {int(F_TUBE/F_OBJ)}x  →  image pixel = {DX * F_TUBE/F_OBJ:.1f} µm")
 print(f"  Noise model  : Poisson({PHOTON_SCALE} ph/px) + Gaussian(σ={READ_NOISE_STD} e⁻)")
-print(f"  Outputs      : {out1}, {out2}, {out3}, {out4}, {out5}")
+print(f"  Outputs      : {out1}, {out2}, {out3}")
 print("Done.")
