@@ -1,25 +1,4 @@
-"""
-Brightfield Microscopy Simulation: Spherocylindrical Bacterial Cell
-Cell geometry: 1 µm diameter, 4 µm total length (stadium cross-section per z-slice)
-Physics from: doi:10.1038/s44303-024-00024-4  (Figure 1)
 
-Key equations:
-  t(x,y,z) = A(x,y,z) · exp(i·phi(x,y,z))   [complex transmission]
-  I(x,y)   = |E_camera(x,y)|^2               [intensity measured by sensor]
-  I_noisy  = Poisson(I · eta) + N(0, sigma_r) [camera with noise]
-
-Pipeline:
-  Plane wave --> BPM through cell --> propagate to focus depth
-  --> Objective (ff_lens, NA aperture) --> Tube lens (ff_lens) --> sensor
-
-Spherocylinder geometry (long axis along X, optical axis along Z):
-  The cell looks like a cylinder with two hemispherical end caps (like a capsule).
-  Cylinder body: |y| ≤ r,     |x| ≤ L_half      (r = 0.5 µm, L_half = 1.5 µm)
-  Left  cap:     (x+L_half)² + y² ≤ r²
-  Right cap:     (x-L_half)² + y² ≤ r²
-  At BPM depth z_c, I shrink the cross-section using r_eff = sqrt(r² - z_c²)
-  so the caps taper correctly at the top and bottom of the cell.
-"""
 
 import sys
 sys.stdout.reconfigure(encoding="utf-8")
